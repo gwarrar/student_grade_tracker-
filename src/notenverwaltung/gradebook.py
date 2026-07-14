@@ -1,8 +1,8 @@
 import re
 from notenverwaltung.models.student import Student
 from notenverwaltung.models.course import Course
-from notenverwaltung.models.grade import Grad
-from notenverwaltung.storage import Storage, InMemoryGradeStore
+from notenverwaltung.models.grade import Grade
+from notenverwaltung.storage import GradeStore, InMemoryGradeStore
 from typing import Dict, List, Set, Tuple, Optional, Union, cast
 import json
 import csv
@@ -13,10 +13,7 @@ from notenverwaltung.exceptions import(
 )
 
 class GradeBook:
-    def __init__(self, store: Storage | None = None) -> None:
-        self.students: dict[str, Student] = {}
-        self.courses: dict[str, Course] = {}
-        self.grades: list[Grade] = []
+    def __init__(self, store: GradeStore | None = None) -> None:
         self.store = store if store is not None else InMemoryGradeStore()
     
     # those properties students ,curses and grades read directly from the storage engine
@@ -34,37 +31,48 @@ class GradeBook:
 
 
     def add_student(self, student: Student) -> None:
-        if student.student_id in self.students:
+        #EAFP (Easier to Ask for Forgiveness than Permission) Pattern
+        try:
+            self.store.get_student(student.student_id)
             raise DuplicateEntryError(f"Student with ID {student.student_id} already exists")
-        self.students[student.student_id] = student
+        except KeyError:
+            self.store.add_student(student)
     
     def add_course(self, course: Course) -> None:
-        if course.course_id in self.courses:
+        try:
+            self.store.get_course(course.course_id)
             raise DuplicateEntryError(f"Course with ID {course.course_id} already exists")
-        self.courses[course.course_id] = course
+        except KeyError:
+            self.store.add_course(course)
     
     def record_grade(self, student_id: str, course_id: str, score: float, date: str, notes: str= "") -> Grade:
-        if student_id not in self.students:
-            raise ValueError(f"Student with ID {student_id} not found")
-        if course_id not in self.courses:
-            raise ValueError(f"Course with ID {course_id} not found")
-
-        student = self.students[student_id]
-        course = self.courses[course_id]
-        
+        try:
+            student = self.store.get_student(student_id)
+        except KeyError:
+            raise StudentNotFoundError(f"Student with ID {student_id} not found")
+    
+        try:
+            course = self.store.get_course(course_id)
+        except KeyError:
+            raise CourseNotFoundError(f"Course with ID {course_id} not found")
+    
         grade = Grade(student, course, score, date, notes)
-        self.grades.append(grade)
+        self.store.record_grade(grade)
         return grade
 
     def get_student_grades(self, student_id) -> List[Grade]:
-        if student_id not in self.students:
-            raise ValueError(f"Student with ID {student_id} not found")
-        return [g for g in self.grades if g.student.student_id == student_id]
+        try:
+            self.store.get_student(student_id)
+        except KeyError:
+            raise StudentNotFoundError(f"Student with ID {student_id} not found")
+        return self.store.get_student_grades(student_id)
     
     def get_course_grades(self, course_id) -> list[Grade]:
-        if course_id not in self.courses:
-            raise ValueError(f"Course with ID {course_id} not found")
-        return [g for g in self.grades if g.course.course_id == course_id]
+        try:
+            self.store.get_course(course_id)
+        except KeyError:
+            raise CourseNotFoundError(f"Course with ID {course_id} not found")
+        return self.store.get_course_grades(course_id)
 
     def student_average(self, student_id: str) -> float:
         if student_id not in self.students:
@@ -149,14 +157,19 @@ class GradeBook:
         }
     
     def from_dict(self, data: dict) -> None:
-        self.students = {sid: Student.from_dict(s) for sid, s in data["students"].items()}
-        self.courses = {cid: Course.from_dict(c) for cid, c in data["courses"].items()}
+        #1. Load students into storage
+        for s in data["students"].values():
+            self.store.add_student(Student.from_dict(s))
 
-        self.grades = []
+        #2. Load courses into storage
+        for c in data["courses"].values():
+            self.store.add_course(Course.from_dict(c))
+
+        #3. Load grades into storage
         for g in data["grades"]:
-            student = self.students[g["student_id"]]
-            course = self.courses[g["course_id"]]
-            self.grades.append(Grade(student, course, g["score"], g["date"], g["notes"]))
+            student = self.store.get_student(g["student_id"])
+            course = self.store.get_course(g["course_id"])
+            self.store.record_grade(Grade(student, course, g["score"], g["date"], g["notes"]))
         
     def save_json(self, filepath: str) -> None:
         with open(filepath, "w", encoding="utf-8") as f:
