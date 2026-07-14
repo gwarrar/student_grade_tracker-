@@ -239,7 +239,7 @@ class GradeBook:
                 "errors": errors
             }
 
-    def _calculate_statistics(self) -> dict:
+    def calculate_statistics(self) -> dict:
         """Calculate statistics and return them as a list of lists for Gradio."""
         if not self.grades:
             return [["No data"]]
