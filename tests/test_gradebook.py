@@ -1,9 +1,11 @@
-import pytest
-from notenverwaltung.gradebook import GradeBook
-from notenverwaltung.models.student import Student
-from notenverwaltung.models.course import Course
-from notenverwaltung.models.grade import Grade
 import csv
+import pytest
+import sqlite3
+from notenverwaltung.models.grade import Grade
+from notenverwaltung.gradebook import GradeBook
+from notenverwaltung.models.course import Course
+from notenverwaltung.models.student import Student
+from notenverwaltung.storage import SqliteGradeStore 
 
 
 @pytest.fixture
@@ -177,3 +179,52 @@ def test_csv_import_corrupted(sample_gradebook, tmp_path):
     assert "Row 4" in report["errors"][1]
     assert "Row 5" in report["errors"][2]
     
+
+#test sQLite Database Storage Persistence
+def test_sqlite_persistence(tmp_path):
+    #temppat create a temporary database file for the test
+    db_file = tmp_path / "test_gradebook.db"
+    
+    # Initialize Sqlite store and inject it into a Gradebook
+    db_store = SqliteGradeStore(str(db_file))
+    gb = GradeBook(store=db_store)
+
+    #add some data
+    s = Student("S100", "Lara", "Croft", "lara@example.com")
+    c = Course("CS200", "Advanced Archeology", 100.0, 50.0, 30)
+    gb.add_student(s)
+    gb.add_course(c)
+    gb.record_grade("S100", "CS200", 85.0, "15-01-2026", "Found the artifact!")
+
+    #Initialize a Brand new Gradebook pointing to the same DB file 
+    new_db_store = SqliteGradeStore(str(db_file))
+    new_gb = GradeBook(store=new_db_store)
+
+    # Verify data persists
+    assert len(new_gb.students) == 1
+    assert "S100" in new_gb.students
+    assert new_gb.students["S100"].full_name == "Lara Croft"
+
+    assert len(new_gb.courses) == 1
+    assert "CS200" in new_gb.courses
+
+    assert len(new_gb.grades) == 1
+    assert new_gb.grades[0].score == 85.0
+    assert new_gb.grades[0].notes == "Found the artifact!"
+
+# test Sqlite database constraint enforcement (foreign keys)
+def test_sqlite_foreign_key_constraint(tmp_path):
+    db_file = tmp_path / "test_constraints.db"
+    db_store = SqliteGradeStore(str(db_file))
+
+    #add a course without student
+    c = Course("CS303","Advanced Python", 100.0, 50.0, 30)
+    db_store.add_course(c)
+
+    #attempting to save a grade for a student that does not exist in the database
+    # should violate the Foreign Key integrity constraint and raise sqlite3.IntegrityError
+    not_existent_student = Student("S999", "Ghost", "Student", "ghost@example.com")
+    invalid_grade = Grade(not_existent_student, c, 90.0, "15-01-2026", "Ghost note")
+
+    with pytest.raises(sqlite3.IntegrityError):
+        db_store.record_grade(invalid_grade)

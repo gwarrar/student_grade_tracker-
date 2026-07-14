@@ -92,7 +92,7 @@ class InMemoryGradeStore(GradeStore):
 
 
 # SQLite Database Storage permanent file Storage
-class  sqliteGradeStore(GradeStore):
+class  SqliteGradeStore(GradeStore):
     def __init__(self, db_path: str = "grades.db"):
         self.db_path = db_path
         self._init_db()
@@ -194,6 +194,7 @@ class  sqliteGradeStore(GradeStore):
     def record_grade(self, grade:Grade) -> None:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
+            cursor.execute("PRAGMA foreign_keys = ON;")
             cursor.execute(
                     "INSERT INTO grades (student_id, course_id, score, date, notes) VALUES (?, ?, ?, ?, ?);",
             (grade.student.student_id, grade.course.course_id, grade.score, grade.date, grade.notes)
