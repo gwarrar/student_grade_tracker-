@@ -25,7 +25,7 @@ class TextReportGenerator(ReportGenerator):
             #over all statistics
             f.write(".......... Overall Metrics ..........\n")
             for row in overall[2:]: #skip the first row header 
-                f.write(f" {row[0]:< 20}: {row[1]}\n") 
+                f.write(f" {row[0]:<20}: {row[1]}\n") 
             f.write("\n")
 
             # course Statistics
