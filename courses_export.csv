@@ -1,0 +1,7 @@
+course_id,name,max_grade,passing_grade,max_students
+CR1,python ,100.0,50.0,30
+CR2,python  with ML,100.0,50.0,30
+CS2323,Python for automation,100.0,50.0,30
+CS102,Intro to Programming,100.0,50.0,30
+CS202,Data Structures,100.0,50.0,25
+MATH101,Calculus I,100.0,50.0,40

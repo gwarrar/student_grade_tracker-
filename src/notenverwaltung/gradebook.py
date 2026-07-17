@@ -118,12 +118,20 @@ class GradeBook:
         return at_risk 
 
     def search_students(self, query:str) -> list[Student]:
+        """_summary_
+
+        Args:
+            query (str): The search query to match against student first name, last name, or email.
+
+        Returns:
+            list[Student]: A list of Student objects that match the search query in their first name, last name, or email. The search is case-insensitive and uses regular expressions for matching.
+        """
         results = []
         for student in self.students.values():
             if(re.search(query, student.first_name, re.IGNORECASE) or 
-               re.search(query, student.last_name, re.IGNORECASE) or
-               re.search(query, student.email, re.IGNORECASE)):
-               results.append(student)
+                re.search(query, student.last_name, re.IGNORECASE) or
+                re.search(query, student.email, re.IGNORECASE)):
+                results.append(student)
         return results
 
     def search_courses(self, query:str) -> list[Course]:
@@ -195,7 +203,7 @@ class GradeBook:
                     g.notes
                 ])
     
-    def import_csv(self, filepath: str) -> None:
+    def import_csv(self, filepath: str) -> dict:
         """Import grades from a CSV file and Skips invalid rows and returns an import report."""
         imported_count = 0
         skipped_count= 0
@@ -239,10 +247,10 @@ class GradeBook:
                 "errors": errors
             }
 
-    def ,,,calculate_statistics(self) -> dict:
+    def calculate_statistics(self):
         """Calculate statistics and return them as a list of lists for Gradio."""
         if not self.grades:
-            return [["No data"]]
+            return [["No data",""]], [], [], []
         
         # Overall stats
         total_points = sum(g.score for g in self.grades)

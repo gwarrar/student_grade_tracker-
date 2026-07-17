@@ -1,0 +1,52 @@
+============================================================
+GradeBook Report
+============================================================
+
+.......... Overall Metrics ..........
+ Total Grades        : 7
+ Total Students      : 23
+ Average Score       : 86.5
+ Pass Rate           : 85.7%
+
+.......... Course Statistics ..........
+ Course ID    Course Name               Enrolled   Pass Rate 
+------------------------------------------------------------
+CR2          python  with ML           1          100.0%    
+CS102        Intro to Programming      2          100.0%    
+CS202        Data Structures           1          100.0%    
+MATH101      Calculus I                1          0.0%      
+CS103        Intro to Programming      1          100.0%    
+CS107        test                      1          100.0%    
+
+..........TOP PERFORMING STUDENTS (MAX 10) ..........
+ Student ID   Name                      Average        
+------------------------------------------------------------
+S101         Peter Peter Nachname      100.0          
+S012         Sherlock Holmes           98.0           
+S010         Lara Croft                95.0           
+S014         Laraa Croftt              95.0           
+idR232       test testLast             90.0           
+S011         Indiana Jones             82.5           
+S013         Tony Stark                45.0           
+
+..........AT-RISK STUDENTS ..........
+Student ID   Student Name              Email                          Average   
+------------------------------------------------------------
+idR231       test1 testLast1           test1@gamil.com                0.0       
+idR222       test2 testLast2           test2@gamil.com                0.0       
+idR223       test3 testLast3           test3@gamil.com                0.0       
+S324343      testeeq rerekfl           fdfsf@gmail.com                0.0       
+ow3443       Skdmr Skdmr               Skdmr@gmail.com                0.0       
+ow34436      Skdmr6 Skdmr6             Skdmr6@gmail.com               0.0       
+S00132       testee testee             testee@gmail.com               0.0       
+s0004        rers rers                 rers@gmail.com                 0.0       
+S0032        TEST TEST                 TEST@gmai.com                  0.0       
+S013         Tony Stark                tony@example.com               45.0      
+S015         Indianaa Joness           indyy@example.com              0.0       
+S016         Sherlockk Holmess         sherlockk@example.com          0.0       
+S017         Tonyy Starkk              tonyy@example.com              0.0       
+S018         The Rock  Jonson          Jonson@example.com             0.0       
+S099         Test Student              test@example.com               0.0       
+S100         100 100                   100@examle.com                 0.0       
+s101         Peter  Peter Nachname     peter@example.com              0.0       
+

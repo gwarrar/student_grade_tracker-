@@ -175,6 +175,7 @@ class  SqliteGradeStore(GradeStore):
                 (course.course_id, course.name, course.max_grade, course.passing_grade, course.max_students)
             )
             conn.commit()
+            
     def get_course(self, course_id: str) -> Course:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
